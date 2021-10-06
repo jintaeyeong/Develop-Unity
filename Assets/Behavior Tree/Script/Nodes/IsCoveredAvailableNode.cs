@@ -19,6 +19,7 @@ public class IsCoveredAvailableNode : Node
     public override NodeState Evaluate()
     {
         Transform bestSpot = FindBestCoverSpot();
+        ai.SetBestCoverSpot(bestSpot);
         return bestSpot != null ? NodeState.Success : NodeState.Failure;
     }
 
@@ -41,11 +42,11 @@ public class IsCoveredAvailableNode : Node
     {
         Transform[] availableSpots = cover.GetCoverSpots();
         Transform bestSpot = null;
-        for (int i = 0; i < availableCovers.Length; i++)
+        for (int i = 0; i < availableSpots.Length; i++)
         {
             Vector3 direction = target.position - availableSpots[i].position;
 
-            if (CheckIfCoverIsVaild(availableCovers[i]))
+            if (CheckIfSpotIsVaild(availableSpots[i]))
             {
                 float angle = Vector3.Angle(availableSpots[i].forward, direction);
                 if(angle < minAngle)
@@ -58,10 +59,18 @@ public class IsCoveredAvailableNode : Node
         return bestSpot;
     }
 
-    private bool CheckIfCoverIsVaild(Cover cover)
+    private bool CheckIfSpotIsVaild(Transform spot)
     {
         RaycastHit hit;
-        Vector3 direction = target.position - cover.position;
+        Vector3 direction = target.position - spot.position;
+        if(Physics.Raycast(spot.position, direction, out hit))
+        {
+            if(hit.collider.transform != target)
+            {
+                return true;
+            }
+        }
 
+        return false;
     }
 }
